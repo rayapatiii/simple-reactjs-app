@@ -11,19 +11,15 @@ pipeline {
     }
 
     stages {
-        stage('Identify User and Permissions') {
+        stage('Identify User') {
             steps {
                 script {
-                    def buildUser = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.getUserId() ?: 'System'
+                    def buildUser = currentBuild.getCause(hudson.model.Cause$UserIdCause)?.getUserId() ?: 'System'
                     echo "Pipeline triggered by user: ${buildUser}"
 
-                    def user = Jenkins.instance.getUser(buildUser)
-                    if (user) {
-                        def authorities = user.getAuthorities().join(', ')
-                        echo "User ${buildUser} has the following permissions: ${authorities}"
-                    } else {
-                        echo "Unable to retrieve permissions for user ${buildUser}"
-                    }
+                    // If you need to get the user's permissions, this would typically involve
+                    // querying Jenkins in a way that doesn't require methods blocked by Script Security.
+                    echo "Note: Directly checking permissions requires additional plugins or direct administrative queries."
                 }
             }
         }
@@ -94,4 +90,3 @@ pipeline {
         }
     }
 }
-
