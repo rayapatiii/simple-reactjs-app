@@ -5,7 +5,7 @@ pipeline {
         NODE_HOME = '/usr/bin/node'
         NPM_HOME = '/usr/bin/npm'
         PATH = "$NODE_HOME:$NPM_HOME:$PATH"
-        APP_DIR = '/var/www/reactjs-app'  // Directory where the app will be deployed
+        APP_DIR = '/var/www/reactjs-app'  // Directory on the EC2 instance where the app will be deployed
     }
 
     stages {
@@ -19,11 +19,8 @@ pipeline {
         stage('Update Homepage in package.json') {
             steps {
                 script {
-                    // Update the homepage in package.json
-                    sh '''
-                    sed -i 's#"homepage": ".*"#"homepage": "/"#' package.json
-                    cat package.json
-                    '''
+                    sh 'sed -i s#"homepage": ".*"#"homepage": "/"# package.json'
+                    sh 'cat package.json'
                 }
             }
         }
@@ -45,16 +42,12 @@ pipeline {
         stage('Deploy to Local Directory') {
             steps {
                 script {
-                    // Clean the target directory if it already exists
-                    sh """
-                    mkdir -p ${APP_DIR}
-                    rm -rf ${APP_DIR}/*
-                    """
+                    // Create the app directory and remove old build files
+                    sh 'mkdir -p ${APP_DIR}'
+                    sh 'rm -rf ${APP_DIR}/build'
 
-                    // Copy the build files to the target directory
-                    sh """
-                    cp -r build/* ${APP_DIR}/
-                    """
+                    // Copy new build files to the app directory
+                    sh 'cp -r build/* ${APP_DIR}/'
                 }
             }
         }
@@ -62,28 +55,28 @@ pipeline {
         stage('Configure Nginx') {
             steps {
                 script {
-                    // Create an Nginx configuration for the React app
-                    sh """
-                    bash -c "cat > /etc/nginx/sites-available/reactjs-app" <<EOL
-server {
-    listen 80;
-    server_name localhost;
+                    // Configuration for Nginx to serve the React app
+                    sh '''
+                        sudo tee /etc/nginx/sites-available/reactjs-app << EOF
+                        server {
+                            listen 80;
+                            server_name _;
 
-    root ${APP_DIR};
-    index index.html;
+                            root /var/www/reactjs-app;
+                            index index.html index.htm;
 
-    location / {
-        try_files \\$uri /index.html;
-    }
-}
-EOL
-                    """
-
-                    // Enable the site and restart Nginx
-                    sh """
-                    ln -sf /etc/nginx/sites-available/reactjs-app /etc/nginx/sites-enabled/
-                    nginx -t && systemctl restart nginx
-                    """
+                            location / {
+                                try_files $uri /index.html;
+                            }
+                        }
+                        EOF
+                    '''
+                    // Create a symlink to enable the Nginx configuration
+                    sh 'sudo ln -sf /etc/nginx/sites-available/reactjs-app /etc/nginx/sites-enabled/'
+                    // Test Nginx configuration
+                    sh 'sudo nginx -t'
+                    // Restart Nginx
+                    sh 'sudo systemctl restart nginx'
                 }
             }
         }
