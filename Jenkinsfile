@@ -45,15 +45,15 @@ pipeline {
         stage('Deploy to Local Directory') {
             steps {
                 script {
-                    // Create the target directory if it doesn't exist, and clean it
+                    // Clean the target directory if it already exists
                     sh """
-                    sudo mkdir -p ${APP_DIR}
-                    sudo rm -rf ${APP_DIR}/*
+                    mkdir -p ${APP_DIR}
+                    rm -rf ${APP_DIR}/*
                     """
 
                     // Copy the build files to the target directory
                     sh """
-                    sudo cp -r build/* ${APP_DIR}/
+                    cp -r build/* ${APP_DIR}/
                     """
                 }
             }
@@ -64,7 +64,7 @@ pipeline {
                 script {
                     // Create an Nginx configuration for the React app
                     sh """
-                    sudo bash -c "cat > /etc/nginx/sites-available/reactjs-app" <<EOL
+                    bash -c "cat > /etc/nginx/sites-available/reactjs-app" <<EOL
 server {
     listen 80;
     server_name localhost;
@@ -81,8 +81,8 @@ EOL
 
                     // Enable the site and restart Nginx
                     sh """
-                    sudo ln -sf /etc/nginx/sites-available/reactjs-app /etc/nginx/sites-enabled/
-                    sudo nginx -t && sudo systemctl restart nginx
+                    ln -sf /etc/nginx/sites-available/reactjs-app /etc/nginx/sites-enabled/
+                    nginx -t && systemctl restart nginx
                     """
                 }
             }
