@@ -14,12 +14,12 @@ pipeline {
         stage('Identify User') {
             steps {
                 script {
-                    def buildUser = currentBuild.getCause(hudson.model.Cause$UserIdCause)?.getUserId() ?: 'System'
+                    def buildUser = env.BUILD_USER ?: 'System'
                     echo "Pipeline triggered by user: ${buildUser}"
 
-                    // If you need to get the user's permissions, this would typically involve
-                    // querying Jenkins in a way that doesn't require methods blocked by Script Security.
-                    echo "Note: Directly checking permissions requires additional plugins or direct administrative queries."
+                    // Since we're not checking permissions, this stage ends here.
+                    // If permissions checking is needed, that typically requires additional plugins or admin privileges.
+                    echo "Note: Permission checking is not included in this script."
                 }
             }
         }
