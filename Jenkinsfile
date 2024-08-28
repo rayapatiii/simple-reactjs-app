@@ -3,8 +3,9 @@ pipeline {
 
     environment {
         NODE_HOME = '/usr/bin/node'
-        PATH = "$NODE_HOME/bin:$PATH"
-        EC2_INSTANCE_ID = 'i-078583d81293b3267'  // Replace with your EC2 instance ID
+        NPM_HOME = '/usr/bin/npm'
+        PATH = "$NODE_HOME/bin:$NPM_HOME/bin:$PATH"
+        EC2_INSTANCE_ID = 'i-078583d81293b3267'  // Replace with your actual EC2 instance ID
         APP_DIR = '/var/www/reactjs-app'  // Directory on the EC2 instance where the app will be deployed
         REGION = 'us-east-1'  // Replace with your AWS region
     }
@@ -17,18 +18,9 @@ pipeline {
             }
         }
 
-        stage('Install Node.js and npm') {
-            steps {
-                sh '''
-                command -v node || curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - && sudo apt-get install -y nodejs
-                node -v
-                npm -v
-                '''
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
+                // Install npm dependencies
                 sh 'npm install'
             }
         }
