@@ -19,7 +19,7 @@ pipeline {
         stage('Update Homepage in package.json') {
             steps {
                 script {
-                    // Corrected sed command
+                    // Corrected sed command to update the homepage in package.json
                     sh 'sed -i "s/\\"homepage\\": \\".*\\"/\\"homepage\\": \\"/\\"/" package.json'
                     sh 'cat package.json'
                 }
