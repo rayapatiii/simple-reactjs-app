@@ -19,7 +19,8 @@ pipeline {
         stage('Update Homepage in package.json') {
             steps {
                 script {
-                    sh 'sed -i s#"homepage": ".*"#"homepage": "/"# package.json'
+                    // Corrected sed command
+                    sh 'sed -i "s/\\"homepage\\": \\".*\\"/\\"homepage\\": \\"/\\"/" package.json'
                     sh 'cat package.json'
                 }
             }
